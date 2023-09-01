@@ -1,5 +1,8 @@
-org 0x0
+org 0x7c00
 bits 16
+
+CODE_SEG equ gdt_code - gdt_start
+DATA_SEG equ gdt_data - gdt_start
 
 _start:
     jmp short start
@@ -10,71 +13,53 @@ _start:
 
 
 start:
-    jmp 0x7c0:step2
+    jmp 0x00:step2
 
-handle_zero:
-    mov ah,0x0e
-    mov al, 'A'
-    mov bx, 0x0
-    int 0x10
-    iret
-handle_one:
-    mov ah, 0x0e
-    mov al, 'a'
-    mov bx, 0x00
-    int 0x10
-    iret
+
 
 step2:
     cli
-    mov ax, 0x7c0
+    mov ax, 0x00
     mov ds, ax
     mov es, ax
-    mov ax, 0x00
     mov ss, ax
     mov sp, 0x7c00
     sti
-    mov word[ss:0x00], handle_zero
-    mov word[ss:0x02], 0x7c0
-    int 0x0
-    mov word[ss:0x04], handle_one
-    mov word[ss:0x06], 0x7c0
-    int 1 
-    mov si, message
-    call print
-    mov ah, 0x02
-    mov al, 0x01
-    mov ch, 0x00
-    mov cl, 2
-    mov dh, 0
-    mov bx, buffer
-    int 0x13
-    jc error
-    mov si, buffer
-    call print
-    jmp $
+.load_protected:
+    cli
+    lgdt[gdt_descriptor]
+    mov eax, cr0
+    or eax, 0x1
+    mov cr0, eax
+    jmp CODE_SEG:load32
+;GDT
+gdt_start:
+gdt_null:
+    dd 0x00
+    dd 0x00
+;Offset 0x08
+gdt_code:
+    dw 0xffff
+    dw 0
+    db 0
+    db 0x9a
+    db 11001111b
+    db 0
+;offset 0x10
+gdt_data:
+    dw 0xffff
+    dw 0
+    db 0
+    db 0x92
+    db 11001111b
+    db 0
+gdt_end:
 
-error:
-    mov si, err_msg
-    call print
+gdt_descriptor:
+    dw gdt_end - gdt_start -1
+    dd gdt_start
+[BITS 32]
+load32:
     jmp $
-print:
-    mov bx, 0
-.loop:
-    lodsb
-    cmp al, 0
-    je .done
-    call print_char
-    jmp .loop
-.done:
-    ret
-
-print_char:
-    mov ah, 0x0e
-    int 0x10
-    ret
-err_msg: db "Failed to load Message"
-message: db "Hello World", 0
 times 510 - ($-$$) db 0
 dw 0xaa55
-buffer:
