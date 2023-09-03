@@ -1,5 +1,6 @@
 #include"kernel.h"
 #include"idt/idt.h"
+#include"io/io.h"
 int terminal_row=0;
 int terminal_col=0;
 
@@ -56,7 +57,6 @@ void print(const char* str, int colour){
     }
 }
 
-extern void problem();
 
 void kernel_main(){
 
@@ -65,6 +65,8 @@ void kernel_main(){
     print("Hello World!\n", 15);
     //Initialize interup descriptor table
     idt_init();
-    problem();
+    
+    outb(0x60, 0xff);
+
 
 }
