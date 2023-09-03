@@ -1,10 +1,11 @@
-section.asm
+section .asm
 
 global idt_load
 idt_load:
-    pusha
+    push ebp
     mov ebp, esp
+
     mov ebx, [ebp+8]
     lidt [ebx]
-    popa
+    pop ebp
     ret

@@ -23,13 +23,14 @@ all: ./bin/boot.bin ./bin/kernel.bin
 	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c ./src/kernel.c -o ./build/kernel.o
 
 ./build/idt/idt.asm.o: ./src/idt/idt.asm
-	nasm -f bin ./src/idt/idt.asm -o ./build/idt/idt.asm.o
+	nasm -f elf ./src/idt/idt.asm -o ./build/idt/idt.asm.o
 
 ./build/idt/idt.o: ./src/idt/idt.c
-	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c ./src/idt/idt.c -o ./build/idt/idt.o
+	i686-elf-gcc $(INCLUDES) -I./src/idt $(FLAGS) -std=gnu99 -c ./src/idt/idt.c -o ./build/idt/idt.o
 
 ./build/memory/memory.o: ./src/memory/memory.c
-	i686-elf-gcc $(INCLUDES) $(FLAGS) -std=gnu99 -c ./src/memory/memory.c -o ./build/memory/memory.o
+	i686-elf-gcc $(INCLUDES) $(FLAGS) -I./src/memory -std=gnu99 -c ./src/memory/memory.c -o ./build/memory/memory.o
 clean:
 	rm -rf ./bin/*
-	rm -rf ./build/*
+	rm -rf ./build/*/*.o
+	rm -rf ./build/*.o

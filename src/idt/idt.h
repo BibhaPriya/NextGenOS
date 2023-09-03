@@ -17,6 +17,8 @@ struct idtr_desc
     uint32_t base;//base address of the descriptor table
 }__attribute__((packed));
 
-
+void idt_zero();
+void idt_set(int interupt_no, void* address);
+void idt_init();
 
 #endif
